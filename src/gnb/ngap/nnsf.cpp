@@ -13,6 +13,14 @@ namespace nr::gnb
 
 NgapAmfContext *NgapTask::selectAmf(int ueId, int32_t &requestedSliceType)
 {
+    if (requestedSliceType < 0)
+    {
+        for (auto &amf : m_amfCtx)
+        {
+            if (amf.second->state == EAmfState::CONNECTED)
+                return amf.second;
+        }
+    }
     for (auto &amf : m_amfCtx) {
         for (const auto &plmnSupport : amf.second->plmnSupportList) {
             for (const auto &singleSlice : plmnSupport->sliceSupportList.slices) {

@@ -10,6 +10,7 @@
 #include "task.hpp"
 #include "utils.hpp"
 
+#include <gnb/gtp/task.hpp>
 #include <gnb/rrc/task.hpp>
 
 #include <asn/ngap/ASN_NGAP_DownlinkNASTransport.h>
@@ -71,8 +72,13 @@ void NgapTask::handleInitialNasTransport(int ueId, OctetString &nasPdu, int64_t 
 
     if (m_ueCtx.count(ueId))
     {
-        m_logger->err("UE context[%d] already exists", ueId);
-        return;
+        m_logger->warn("Replacing stale UE context[%d] before Initial NAS transport", ueId);
+
+        auto w = std::make_unique<NmGnbNgapToGtp>(NmGnbNgapToGtp::UE_CONTEXT_RELEASE);
+        w->ueId = ueId;
+        m_base->gtpTask->push(std::move(w));
+
+        deleteUeContext(ueId);
     }
 
     createUeContext(ueId, requestedSliceType);

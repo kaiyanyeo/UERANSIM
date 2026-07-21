@@ -44,9 +44,9 @@ void GnbRrcTask::receiveRrcSetupRequest(int ueId, const ASN_RRC_RRCSetupRequest 
     auto *ue = tryFindUe(ueId);
     if (ue)
     {
-        // TODO: handle this more properly
-        m_logger->warn("Discarding RRC Setup Request, UE context already exists");
-        return;
+        m_logger->warn("RRC Setup Request received for UE[%d] while context already exists; releasing stale context",
+                       ueId);
+        handleRadioLinkFailure(ueId);
     }
 
     if (msg.rrcSetupRequest.ue_Identity.present == ASN_RRC_InitialUE_Identity_PR_NOTHING)
